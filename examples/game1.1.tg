@@ -1,0 +1,19 @@
+# This is figure 1 in DOI:10.1007/978-3-031-57228-9_5
+# where diamonds ~ player 0 and squares ~ player 1.
+
+node 0: label("s"), owner(0)
+node 1: label("u"), owner(1)
+node 2: label("v"), owner(1)
+node 3: label("w"), owner(1)
+node 4: label("r"), owner(0)
+node 5: label("t"), owner(0)
+edge 0 -> 0
+edge 0 -> 1
+edge 0 -> 5: available(t%5 == 0)
+edge 1 -> 5: available(!(t%3 == 0))
+edge 1 -> 2: available((t%3 == 0) || (t%3 == 1))
+edge 2 -> 3
+edge 3 -> 1
+edge 4 -> 4
+edge 5 -> 0
+edge 5 -> 4
