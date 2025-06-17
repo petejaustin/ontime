@@ -52,6 +52,37 @@ impl TemporalEdge for ExplicitTemporalEdge {
     }
 }
 
+pub struct ClosureTemporalEdge {
+    source: Node,
+    target: Node,
+    available_at: Box<dyn Fn(usize) -> bool + Send + Sync>,
+}
+impl ClosureTemporalEdge {
+    pub fn new<F>(source: Node, target: Node, available_at: F) -> Self
+    where
+        F: Fn(usize) -> bool + Send + Sync + 'static,
+    {
+        Self {
+            source,
+            target,
+            available_at: Box::new(available_at),
+        }
+    }
+}
+impl TemporalEdge for ClosureTemporalEdge {
+    fn source(&self) -> &Node {
+        &self.source
+    }
+    fn target(&self) -> &Node {
+        &self.target
+    }
+    fn is_available(&self, time: usize) -> bool {
+        (self.available_at)(time)
+    }
+}
+
+
+
 /// A temporal graph is parameterized by the type of TemporalEdge.
 /// Stores outgoing edges for each node for efficient access.
 pub struct TemporalGraph<E: TemporalEdge> {
@@ -59,16 +90,33 @@ pub struct TemporalGraph<E: TemporalEdge> {
     pub node_count: usize,
     /// A map from node to its outgoing edges.
     pub edges: HashMap<Node, Vec<E>>,
+    /// node ownership
+    pub node_owner: Vec<bool>,
+    /// node label
+    pub node_label: Vec<Option<String>>,
 }
 
 impl<E: TemporalEdge> TemporalGraph<E> {
     /// Creates a new TemporalGraph from a node count and a list of edges.
-    pub fn new(node_count: Node, edges: Vec<E>) -> Self {
+    pub fn new(
+        node_count: Node,
+        edges: Vec<E>,
+        node_owner: Vec<bool>,
+        node_label: Vec<Option<String>>,
+    ) -> Self {
         let mut edge_map: HashMap<Node, Vec<E>> = HashMap::new();
         for edge in edges {
             edge_map.entry(*edge.source()).or_default().push(edge);
         }
-        Self { node_count, edges: edge_map }
+        let node_label = (0..node_count)
+            .map(|i| node_label.get(i).cloned().unwrap_or(None).or_else(|| Some(i.to_string())))
+            .collect();
+        Self { 
+            node_count, 
+            edges: edge_map, 
+            node_owner, 
+            node_label,
+        }
     }
 
     /// Returns an iterator over all edges in the graph.
@@ -109,7 +157,10 @@ mod tests {
         let edge2 = ExplicitTemporalEdge::new(1, 2, avail2.clone());
 
         let edges = vec![edge1, edge2];
-        let graph = TemporalGraph::new(3, edges.clone());
+        let node_count = 3;
+        let node_owner = vec![false; node_count];
+        let node_label = vec![None; node_count];
+        let graph = TemporalGraph::new(node_count, edges.clone(), node_owner, node_label);
         (graph, edges)
     }
 
