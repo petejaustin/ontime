@@ -1,0 +1,141 @@
+grammar;
+
+use std::collections::HashMap;
+use crate::temporal_graphs::{TemporalGraph, NodeAttr, Edge,};
+
+// pub TgFile: TemporalGraph = {
+//     <lines:Lines> => {
+//         // Map string node IDs to indices
+//         let mut id_map = HashMap::new();
+//         let mut node_attrs: HashMap<usize, Vec<NodeAttr>> = HashMap::new();
+//         let mut node_owner = vec![];
+//         let mut node_label = vec![];
+//         let mut next_idx = 0;
+// 
+//         for (id, attrs) in &lines.nodes {
+//             let idx = *id_map.entry(id.clone()).or_insert_with(|| {
+//                 let i = next_idx;
+//                 next_idx += 1;
+//                 i
+//             });
+//             node_attrs.insert(idx, attrs.clone());
+//             let mut owner = false;
+//             let mut label = None;
+//             for attr in attrs {
+//                 match attr {
+//                     NodeAttr::Owner(b) => owner = *b,
+//                     NodeAttr::Id(s) => label = Some(Some(s.clone())),
+//                 }
+//             }
+//             node_owner.push(owner);
+//             node_label.push(label.unwrap_or(None));
+//         }
+// 
+//         let node_count = next_idx;
+// 
+//         let mut edges = Vec::new();
+//         for (from_id, to_id, available, attr) in lines.edges {
+//             let from = *id_map.get(&from_id).unwrap();
+//             let to = *id_map.get(&to_id).unwrap();
+//             edges.push(Edge::new(from, to, available, attr));
+//         }
+// 
+//         TemporalGraph::new(
+//             node_count,
+//             edges,
+//             node_owner,
+//             node_label,
+//             node_attrs,
+//         )
+//     }
+// };
+// 
+// Lines: ParsedData = {
+//     <l:Line*> => {
+//         let mut nodes = Vec::new();
+//         let mut edges = Vec::new();
+//         for item in l {
+//             match item {
+//                 ParsedLine::Node(id, attrs) => nodes.push((id, attrs)),
+//                 ParsedLine::Edge(from, to, available, attr) => edges.push((from, to, available, attr)),
+//                 ParsedLine::Empty => {}
+//             }
+//         }
+//         ParsedData { nodes, edges }
+//     }
+// };
+// 
+// Line: ParsedLine = {
+//     CommentOrEmpty => ParsedLine::Empty,
+//     NodeLine => ParsedLine::Node(_, _),
+//     EdgeLine => ParsedLine::Edge(_, _, _, _),
+// };
+// 
+// CommentOrEmpty: () = {
+//     r#"[\s]*"# => (),
+//     r#"[\s]*#.*"# => (),
+// };
+// 
+// NodeLine: (String, Vec<NodeAttr>) = {
+//     "node" <id:Id> ":" <attrs:AttrList> => (id, attrs)
+// };
+// 
+// AttrList: Vec<NodeAttr> = {
+//     <a:Attr> ** "," => a
+// };
+ 
+pub Attr: NodeAttr = {
+    //"label" "(" <l:Str> ")" => NodeAttr::Id(l),
+    "owner" "(" <b:Bool> ")" => NodeAttr::Owner(b),
+};
+ 
+// EdgeLine: (String, String, fn(usize) -> bool, HashMap<String, EdgeAttr>) = {
+//     "edge" <from:Id> "->" <to:Id> <props:EdgePropList> => {
+//         let mut available: fn(usize) -> bool = |_| true;
+//         let mut attr = HashMap::new();
+//         for (k, v) in props {
+//             match v {
+//                 EdgeAttr::Available(f) => available = f,
+//                 _ => { attr.insert(k, v); }
+//             }
+//         }
+//         (from, to, available, attr)
+//     }
+// };
+// 
+// EdgePropList: Vec<(String, EdgeAttr)> = {
+//     ":" <p:EdgeProp> ** "," => p,
+//     => vec![]
+// };
+// 
+// EdgeProp: (String, EdgeAttr) = {
+//     "available" "(" <f:FormulaStr> ")" => ("available".to_string(), EdgeAttr::Available(|_| true)), // TODO: parse formula string
+// };
+ 
+Id: String = {
+    <s:r#"[A-Za-z0-9_]+"#> => s.to_string()
+};
+
+Bool: bool = {
+    "0" => false,
+    "1" => true,
+};
+
+// Str: String = {
+//     r#""([^"\\]|\\.)*""# => String::from(&<>[1..<>.len()-1]),
+// };
+// 
+// FormulaStr: String = {
+//     r#"[^)]+(?=\))"# => String::from(<>),
+// };
+// 
+// pub struct ParsedData {
+//     pub nodes: Vec<(String, Vec<NodeAttr>)>,
+//     pub edges: Vec<(String, String, fn(usize) -> bool, HashMap<String, EdgeAttr>)>,
+// }
+// 
+// pub enum ParsedLine {
+//     Node(String, Vec<NodeAttr>),
+//     Edge(String, String, fn(usize) -> bool, HashMap<String, EdgeAttr>),
+//     Empty,
+// }

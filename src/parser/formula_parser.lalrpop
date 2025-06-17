@@ -1,0 +1,24 @@
+use std::str::FromStr;
+use crate::temporal_graphs::{TemporalGraph, NodeAttr, Edge};
+
+grammar;
+
+pub Term: i32 = {
+    <n:Num> => n,
+    "(" <t:Term> ")" => t,
+};
+
+Bool: bool = {
+    "0" => false,
+    "1" => true,
+};
+
+Str: String = {
+    r#""([^"\\]|\\.)*""# => String::from(&<>[1..<>.len()-1]),
+};
+
+Attr: NodeAttr = {
+    "label" "(" <l:Str> ")" => NodeAttr::Id(l),
+    "owner" "(" <b:Bool> ")" => NodeAttr::Owner(b),
+};
+Num: i32 = <s:r"[0-9]+"> => i32::from_str(s).unwrap();
