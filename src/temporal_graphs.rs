@@ -1,11 +1,9 @@
 use std::collections::HashMap;
-use std::collections::HashSet;
 
 pub type Node = usize;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum NodeAttr {
-    Id(String),
     Label(String),
     Owner(bool),
 }
@@ -18,11 +16,7 @@ pub struct Edge {
 }
 
 impl Edge {
-    pub fn new(
-        source: Node,
-        target: Node,
-        available_at: fn(usize) -> bool,
-    ) -> Self {
+    pub fn new(source: Node, target: Node, available_at: fn(usize) -> bool) -> Self {
         Self {
             source,
             target,

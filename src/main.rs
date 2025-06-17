@@ -8,13 +8,15 @@ use ontime::parser::tg_parser;
 
 fn main() -> io::Result<()> {
     // Path to the example file
-    let path = Path::new("examples/att.tg");
+    let path = Path::new("examples/lines.tg");
+
+    let path = Path::new("examples/game1.1.tg");
     let mut file = File::open(path)?;
     let mut input = String::new();
     file.read_to_string(&mut input)?;
 
     // Parse the file
-    let parser = tg_parser::AttrParser::new();
+    let parser = tg_parser::TemporalGraphParser::new();
     match parser.parse(&input) {
         Ok(graph) => {
             println!("{:#?}", graph);
