@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+#[allow(dead_code)]
 pub type Node = usize;
 
 #[derive(Debug, Clone)]
@@ -9,6 +10,7 @@ pub enum NodeAttr {
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct Edge {
     source: Node,
     target: Node,

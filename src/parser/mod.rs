@@ -3,13 +3,6 @@ use crate::temporal_graphs::NodeAttr;
 
 
 #[derive(Debug)]
-pub struct ParsedData {
-    pub nodes: Vec<(String, Vec<NodeAttr>)>,
-    pub edges: Vec<(String, String, Vec<(String, String)>)>,
-}
-
-
-#[derive(Debug)]
 pub enum ParsedLine {
     Node(String, Vec<NodeAttr>),
     Edge(String, String, Vec<(String, String)>),

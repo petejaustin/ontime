@@ -2,7 +2,7 @@ grammar;
 
 use std::collections::HashMap;
 use crate::temporal_graphs::{TemporalGraph, NodeAttr, Edge, Node};
-use crate::parser::{ParsedData, ParsedLine};
+use crate::parser::ParsedLine;
 
 Comma<T>: Vec<T> = {
     <mut v:(<T> ",")*> <e:T?> => match e {
@@ -55,21 +55,6 @@ Formula: String = {
 
 
 
-
-pub Lines: ParsedData = {
-    <l:Line*> => {
-        let mut nodes = Vec::new();
-        let mut edges = Vec::new();
-        for item in l {
-            match item {
-                ParsedLine::Node(id, attrs) => nodes.push((id, attrs)),
-                ParsedLine::Edge(from, to, attr) => edges.push((from, to,  attr)),
-                ParsedLine::Empty => {}
-            }
-        }
-        ParsedData { nodes, edges }
-    }
-};
 
 CommentOrEmptyLine: () = {
     r#"[\s]*"# => (),

@@ -8,9 +8,12 @@ use ontime::parser::tg_parser;
 
 fn main() -> io::Result<()> {
     // Path to the example file
-    let path = Path::new("examples/lines.tg");
-
-    let path = Path::new("examples/game1.1.tg");
+    let args: Vec<String> = std::env::args().collect();
+    let path = if args.len() > 1 {
+        Path::new(&args[1])
+    } else {
+        Path::new("examples/game1.1.tg")
+    };
     let mut file = File::open(path)?;
     let mut input = String::new();
     file.read_to_string(&mut input)?;
