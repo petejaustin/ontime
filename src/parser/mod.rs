@@ -1,18 +1,28 @@
 use std::collections::HashMap;
 
 use lalrpop_util::lalrpop_mod;
-use crate::temporal_graphs::{Node, NodeAttr, Edge, TemporalGraph};
+
+
+use crate::{temporal_graphs::{Edge, Node, TemporalGraph}};
+use crate::formulae::Formula;
+
+
+#[derive(Debug, Clone)]
+pub enum NodeAttr {
+    Label(String),
+    Owner(bool),
+}
 
 
 #[derive(Debug)]
 pub enum ParsedLine {
     Node(String, Vec<NodeAttr>),
-    Edge(String, String, Vec<(String, String)>),
+    Edge(String, String, Option<Formula>),
     Empty,
 }
 
 lalrpop_mod!(pub tg_parser, "/parser/tg_parser.rs"); // LALRPOP parser module
-//lalrpop_mod!(formula_parser);
+lalrpop_mod!(pub formula, "/parser/formula.rs"); // LALRPOP parser module
 
 
 pub fn temporal_graph_from_lines(lines: Vec<ParsedLine>) -> TemporalGraph {
@@ -58,17 +68,23 @@ pub fn temporal_graph_from_lines(lines: Vec<ParsedLine>) -> TemporalGraph {
         let mut edges = Vec::new();
 
         for item in &edge_lines {
-            if let ParsedLine::Edge(from_id, to_id, attr) = item {
+            if let ParsedLine::Edge(from_id, to_id, formula) = item {
                 let from = *id_map.get(from_id).unwrap();
                 let to = *id_map.get(to_id).unwrap();
+
+                let formula = match formula {
+                Some(f) => f.clone(),
+                None => Formula::True,
+                };
+
                 let available_at = |_: usize| true;
-                edges.push(Edge::new(from, to, available_at));
+                edges.push(Edge::new(from, to, formula, available_at));
             }
         }
 
         TemporalGraph::new(
             node_count,
-            node_attrs,
+           // node_attrs,
             edges,
         )
     }

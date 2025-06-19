@@ -1,27 +1,26 @@
 use std::collections::HashMap;
 
+use crate::formulae::Formula;
+
 #[allow(dead_code)]
 pub type Node = usize;
 
-#[derive(Debug, Clone)]
-pub enum NodeAttr {
-    Label(String),
-    Owner(bool),
-}
 
 #[derive(Debug)]
 #[allow(dead_code)]
 pub struct Edge {
     source: Node,
     target: Node,
+    formula: Formula,
     available_at: fn(usize) -> bool,
 }
 
 impl Edge {
-    pub fn new(source: Node, target: Node, available_at: fn(usize) -> bool) -> Self {
+    pub fn new(source: Node, target: Node, formula:Formula, available_at: fn(usize) -> bool) -> Self {
         Self {
             source,
             target,
+            formula,
             available_at: available_at,
         }
     }
@@ -29,6 +28,7 @@ impl Edge {
         Self {
             source,
             target,
+            formula: Formula::True,
             available_at: |_| true,
         }
     }
@@ -53,14 +53,14 @@ pub struct TemporalGraph {
     pub node_count: usize,
     /// A map from node to its outgoing edges.
     pub edges: HashMap<Node, Vec<Edge>>,
-    /// Map from node to its attributes
-    pub node_attrs: HashMap<Node, HashMap<String, NodeAttr>>,
+    // Map from node to its attributes
+    //pub node_attrs: HashMap<Node, HashMap<String, NodeAttr>>,
 }
 impl TemporalGraph {
     /// Creates a new TemporalGraph from a node count and a list of edges.
     pub fn new(
         node_count: Node,
-        node_attrs: HashMap<Node, HashMap<String, NodeAttr>>,
+        //node_attrs: HashMap<Node, HashMap<String, NodeAttr>>,
         edges: Vec<Edge>,
     ) -> Self {
         let mut edge_map: HashMap<Node, Vec<Edge>> = HashMap::new();
@@ -69,7 +69,7 @@ impl TemporalGraph {
         }
         Self {
             node_count,
-            node_attrs,
+            //node_attrs,
             edges: edge_map,
         }
     }

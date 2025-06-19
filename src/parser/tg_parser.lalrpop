@@ -1,41 +1,54 @@
 grammar;
 
-use std::collections::HashMap;
-use crate::temporal_graphs::{TemporalGraph, NodeAttr, Edge, Node};
-use crate::parser::{ParsedLine,temporal_graph_from_lines};
+use crate::temporal_graphs::{TemporalGraph};
+use crate::parser::{ParsedLine, NodeAttr, temporal_graph_from_lines};
+use crate::formulae::{Formula,Expr};
+use crate::parser::formula;
 
 // Some basic terms
 Id: String = {
-    <s:r#"[A-Za-z0-9_]+"#> => s.to_string()
-};
-
-Bool: bool = {
-    "0" => false,
-    "1" => true,
+    <s:r#"[A-Za-z_]+[A-Za-z0-9_]*"#> => s.to_string()
 };
 
 Label: String = {
     r#""([^"\\]|\\.)*""# => String::from(&<>[1..<>.len()-1]),
 };
 
-Formula: String = {
-    r#"[A-Za-z0-9_]+"# => <>.to_string()
+pub Formula: Formula = {
+    "(" "forall" <v:VAR> <f:Formula> ")" => Formula::Forall(v, Box::new(f)),
+    "(" "exists" <v:VAR> <f:Formula> ")" => Formula::Exists(v, Box::new(f)),
+    "(" "and" <f1:Formula> <f2:Formula> ")" => Formula::And(Box::new(f1), Box::new(f2)),
+    "(" "or" <f1:Formula> <f2:Formula> ")" => Formula::Or(Box::new(f1), Box::new(f2)),
+    "(" "not" <f:Formula> ")" => Formula::Not(Box::new(f)),
+    "(" "=" <e1:Expr> <e2:Expr> ")" => Formula::Eq(Box::new(e1), Box::new(e2)),
+    "(" "!=" <e1:Expr> <e2:Expr> ")" => Formula::Neq(Box::new(e1), Box::new(e2)),
+    "(" "<" <e1:Expr> <e2:Expr> ")" => Formula::Lt(Box::new(e1), Box::new(e2)),
+    "(" "<=" <e1:Expr> <e2:Expr> ")" => Formula::Le(Box::new(e1), Box::new(e2)),
+    "(" ">" <e1:Expr> <e2:Expr> ")" => Formula::Gt(Box::new(e1), Box::new(e2)),
+    "(" ">=" <e1:Expr> <e2:Expr> ")" => Formula::Ge(Box::new(e1), Box::new(e2)),
 };
 
+Expr: Expr = {
+    "(" "+" <e1:Expr> <e2:Expr> ")" => Expr::Add(Box::new(e1), Box::new(e2)),
+    "(" "-" <e1:Expr> <e2:Expr> ")" => Expr::Sub(Box::new(e1), Box::new(e2)),
+    "(" "*" <n:INT> <e:Expr> ")" => Expr::MulConst(n, Box::new(e)),
+    "(" "mod" <e:Expr> <n:INT> ")" => Expr::Mod(Box::new(e), n),
+    <v:VAR> => Expr::Var(v),
+    <n:INT> => Expr::Const(n),
+};
+
+VAR: String = <s:Id> => s;
+INT: i64 = <s:r"[0-9]+"> => s.parse::<i64>().unwrap();
 
 
  
 // Node attributes, e.g. "owner(0)"
 NodeAttr: NodeAttr = {
-    "label" "(" <l:Label> ")" => NodeAttr::Label(l),
-    "owner" "(" <b:Bool> ")" => NodeAttr::Owner(b),
+    "label" "[" <l:Label> "]" => NodeAttr::Label(l),
+    "owner" "[1]" => NodeAttr::Owner(true),
+    "owner" "[0]" => NodeAttr::Owner(false),
 };
 
-// Edge attributes
-EdgeAttr: (String,String) = {
-    "available" "(" <f:Formula> ")" =>  ("available".to_string(),f), // TODO: parse formula
-    "label" "(" <Label> ")" =>  ("label".to_string(),<>),
-};
 
 
 // Helper: a comma-separated list of Ts
@@ -49,23 +62,23 @@ Comma<T>: Vec<T> = {
     }
 };
 
-
 // Lists of node and edge attributes
-EdgeAttrList = Comma<EdgeAttr>;
 NodeAttrList = Comma<NodeAttr>;
 
 
 
 CommentOrEmptyLine: () = {
-    r#"[\s]*"# => (),
-    r#"[\s]*#.*"# => (),
+    r#"[ \t]*"\n"# => (),
+    r#"[ \t]*#.*\n"# => (),
 };
 
 pub Line: ParsedLine = {
     CommentOrEmptyLine => ParsedLine::Empty,
     "node" <id:Id> ":" <attrs:NodeAttrList> => ParsedLine::Node(id, attrs),
     "node" <id:Id> => ParsedLine::Node(id, vec![]),
-    "edge" <from:Id> "->" <to:Id> <props:(":" <EdgeAttrList>)?> => ParsedLine::Edge(from, to, props.unwrap_or(vec![])),
+    "edge" <from:Id> "->" <to:Id> => ParsedLine::Edge(from, to, None),
+    "edge" <from:Id> "->" <to:Id> ":" <s:r#"\(.*\)"#> => ParsedLine::Edge(from, to, Some(formula::FormulaParser::new().parse(&s).unwrap())),
+    //"edge" <from:Id> "->" <to:Id> ":" <f:Formula> => ParsedLine::Edge(from, to, Some(f)),
 };
 
 

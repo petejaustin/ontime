@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::{self, Read};
 use std::path::Path;
 
-mod temporal_graphs;
+use ontime::temporal_graphs;
 use ontime::parser::tg_parser;
 
 

@@ -1,0 +1,30 @@
+use crate::formulae::Expr;
+use crate::formulae::Formula;
+
+grammar;
+
+pub Formula: Formula = {
+    "(" "forall" <v:VAR> <f:Formula> ")" => Formula::Forall(v, Box::new(f)),
+    "(" "exists" <v:VAR> <f:Formula> ")" => Formula::Exists(v, Box::new(f)),
+    "(" "and" <f1:Formula> <f2:Formula> ")" => Formula::And(Box::new(f1), Box::new(f2)),
+    "(" "or" <f1:Formula> <f2:Formula> ")" => Formula::Or(Box::new(f1), Box::new(f2)),
+    "(" "not" <f:Formula> ")" => Formula::Not(Box::new(f)),
+    "(" "=" <e1:Expr> <e2:Expr> ")" => Formula::Eq(Box::new(e1), Box::new(e2)),
+    "(" "!=" <e1:Expr> <e2:Expr> ")" => Formula::Neq(Box::new(e1), Box::new(e2)),
+    "(" "<" <e1:Expr> <e2:Expr> ")" => Formula::Lt(Box::new(e1), Box::new(e2)),
+    "(" "<=" <e1:Expr> <e2:Expr> ")" => Formula::Le(Box::new(e1), Box::new(e2)),
+    "(" ">" <e1:Expr> <e2:Expr> ")" => Formula::Gt(Box::new(e1), Box::new(e2)),
+    "(" ">=" <e1:Expr> <e2:Expr> ")" => Formula::Ge(Box::new(e1), Box::new(e2)),
+};
+
+Expr: Expr = {
+    "(" "+" <e1:Expr> <e2:Expr> ")" => Expr::Add(Box::new(e1), Box::new(e2)),
+    "(" "-" <e1:Expr> <e2:Expr> ")" => Expr::Sub(Box::new(e1), Box::new(e2)),
+    "(" "*" <n:INT> <e:Expr> ")" => Expr::MulConst(n, Box::new(e)),
+    "(" "mod" <e:Expr> <n:INT> ")" => Expr::Mod(Box::new(e), n),
+    <v:VAR> => Expr::Var(v),
+    <n:INT> => Expr::Const(n),
+};
+
+VAR: String = <s:r"[A-Za-z]+"> => s.to_string();
+INT: i64 = <s:r"[0-9]+"> => s.parse::<i64>().unwrap();
