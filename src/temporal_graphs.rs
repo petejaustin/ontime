@@ -1,36 +1,33 @@
 use std::collections::HashMap;
 
-use crate::formulae::Formula;
+use crate::{formulae::Formula, parser::NodeAttr};
 
 #[allow(dead_code)]
 pub type Node = usize;
 
-
-#[derive(Debug)]
 #[allow(dead_code)]
 pub struct Edge {
     source: Node,
     target: Node,
     formula: Formula,
-    available_at: fn(usize) -> bool,
+    available_at: Box<dyn Fn(usize) -> bool + 'static>,
 }
 
 impl Edge {
-    pub fn new(source: Node, target: Node, formula:Formula, available_at: fn(usize) -> bool) -> Self {
+    pub fn new(source: Node, target: Node, formula: Formula) -> Self {
+        let available_at = match formula.clone().as_closure_owned() {
+            Ok(f) => f,
+            Err(_) => Box::new(|_| false),
+        };
         Self {
             source,
             target,
             formula,
-            available_at: available_at,
+            available_at,
         }
     }
     pub fn new_simple(source: Node, target: Node) -> Self {
-        Self {
-            source,
-            target,
-            formula: Formula::True,
-            available_at: |_| true,
-        }
+        Self::new(source, target, Formula::True)
     }
 
     fn source(&self) -> &Node {
@@ -41,6 +38,16 @@ impl Edge {
     }
     fn is_available(&self, time: usize) -> bool {
         (self.available_at)(time)
+    }
+}
+// to print Edges : skip available_at
+impl std::fmt::Debug for Edge {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Edge")
+            .field("source", &self.source)
+            .field("target", &self.target)
+            .field("formula", &self.formula)
+            .finish()
     }
 }
 
@@ -54,13 +61,13 @@ pub struct TemporalGraph {
     /// A map from node to its outgoing edges.
     pub edges: HashMap<Node, Vec<Edge>>,
     // Map from node to its attributes
-    //pub node_attrs: HashMap<Node, HashMap<String, NodeAttr>>,
+    pub node_attrs: HashMap<Node, HashMap<String, NodeAttr>>,
 }
 impl TemporalGraph {
     /// Creates a new TemporalGraph from a node count and a list of edges.
     pub fn new(
         node_count: Node,
-        //node_attrs: HashMap<Node, HashMap<String, NodeAttr>>,
+        node_attrs: HashMap<Node, HashMap<String, NodeAttr>>,
         edges: Vec<Edge>,
     ) -> Self {
         let mut edge_map: HashMap<Node, Vec<Edge>> = HashMap::new();
@@ -69,7 +76,7 @@ impl TemporalGraph {
         }
         Self {
             node_count,
-            //node_attrs,
+            node_attrs,
             edges: edge_map,
         }
     }

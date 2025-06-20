@@ -2,7 +2,6 @@ grammar;
 
 use crate::temporal_graphs::{TemporalGraph};
 use crate::parser::{ParsedLine, NodeAttr, temporal_graph_from_lines};
-use crate::formulae::{Formula,Expr};
 use crate::parser::formula;
 
 

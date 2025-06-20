@@ -77,14 +77,13 @@ pub fn temporal_graph_from_lines(lines: Vec<ParsedLine>) -> TemporalGraph {
                 None => Formula::True,
                 };
 
-                let available_at = |_: usize| true;
-                edges.push(Edge::new(from, to, formula, available_at));
+                edges.push(Edge::new(from, to, formula));
             }
         }
 
         TemporalGraph::new(
             node_count,
-           // node_attrs,
+            node_attrs,
             edges,
         )
     }
