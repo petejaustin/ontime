@@ -1,0 +1,13 @@
+// This is figure 2 in DOI:10.1007/978-3-031-57228-9_5
+// where diamonds ~ player 1 and squares ~ player 2=0.
+
+node s: owner[1]
+node u: owner[0]
+node t: owner[1]
+node t': owner[1]
+
+edge s -> u: (= (mod x 2)  0)
+edge u -> t: (= (mod x 2)  1)
+edge u -> t': (= (mod x 2)  1)
+edge t -> t
+edge t -> s
