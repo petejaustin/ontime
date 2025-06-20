@@ -105,4 +105,18 @@ impl TemporalGraph {
     pub fn nodes(&self) -> impl Iterator<Item = Node> {
         0..self.node_count
     }
+
+    /// Given a set of node id strings, returns a vector of bools of length node_count.
+    /// For each string, if node_id_map gives a Node with index n, then the returned vector is true at position n.
+    pub fn nodes_selected_from_ids(&self, ids: &std::collections::HashSet<String>) -> Vec<bool> {
+        let mut selected = vec![false; self.node_count];
+        for id in ids {
+            if let Some(&n) = self.node_id_map.get(id) {
+                if n < self.node_count {
+                    selected[n] = true;
+                }
+            }
+        }
+        selected
+    }
 }

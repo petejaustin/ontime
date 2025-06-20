@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::fs::File;
 use std::io::{self, Read};
 use std::path::Path;
@@ -18,11 +19,18 @@ fn main() -> io::Result<()> {
     let mut input = String::new();
     file.read_to_string(&mut input)?;
 
+    let mut target_nodes: HashSet<String> = HashSet::new();
+    target_nodes.insert("s3".to_string());
+
+
     // Parse the file
     let parser = tg_parser::TemporalGraphParser::new();
     match parser.parse(&input) {
         Ok(graph) => {
             println!("{:#?}", graph);
+
+            println!("Target: {:?}", target_nodes);
+            println!("{:?}", graph.nodes_selected_from_ids(&target_nodes));
         }
         Err(e) => {
             eprintln!("Parse error: {:?}", e);
