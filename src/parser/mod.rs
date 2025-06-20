@@ -38,14 +38,14 @@ pub fn temporal_graph_from_lines(lines: Vec<ParsedLine>) -> TemporalGraph {
         }
 
         // Map string node IDs to indices
-        let mut id_map = HashMap::new();
+        let mut node_id_map = HashMap::new();
         let mut node_attrs: HashMap<Node, HashMap<String,NodeAttr>> = HashMap::new();
         let mut next_idx = 0;
 
 
         for item in &node_lines {
             if let ParsedLine::Node(id, attrs) = item {
-                let idx = *id_map.entry(id.clone()).or_insert_with(|| {
+                let idx = *node_id_map.entry(id.clone()).or_insert_with(|| {
                     let i = next_idx;
                     next_idx += 1;
                     i
@@ -69,8 +69,8 @@ pub fn temporal_graph_from_lines(lines: Vec<ParsedLine>) -> TemporalGraph {
 
         for item in &edge_lines {
             if let ParsedLine::Edge(from_id, to_id, formula) = item {
-                let from = *id_map.get(from_id).unwrap();
-                let to = *id_map.get(to_id).unwrap();
+                let from = *node_id_map.get(from_id).unwrap();
+                let to = *node_id_map.get(to_id).unwrap();
 
                 let formula = match formula {
                 Some(f) => f.clone(),
@@ -83,6 +83,7 @@ pub fn temporal_graph_from_lines(lines: Vec<ParsedLine>) -> TemporalGraph {
 
         TemporalGraph::new(
             node_count,
+            node_id_map,
             node_attrs,
             edges,
         )

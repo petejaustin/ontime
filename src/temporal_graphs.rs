@@ -62,11 +62,15 @@ pub struct TemporalGraph {
     pub edges: HashMap<Node, Vec<Edge>>,
     // Map from node to its attributes
     pub node_attrs: HashMap<Node, HashMap<String, NodeAttr>>,
+
+    /// Map node ids to their index
+    pub node_id_map: HashMap<String, Node>,
 }
 impl TemporalGraph {
     /// Creates a new TemporalGraph from a node count and a list of edges.
     pub fn new(
         node_count: Node,
+        node_id_map: HashMap<String, Node>,
         node_attrs: HashMap<Node, HashMap<String, NodeAttr>>,
         edges: Vec<Edge>,
     ) -> Self {
@@ -76,6 +80,7 @@ impl TemporalGraph {
         }
         Self {
             node_count,
+            node_id_map,
             node_attrs,
             edges: edge_map,
         }
