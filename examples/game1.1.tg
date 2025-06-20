@@ -1,10 +1,10 @@
 // This is figure 1 in DOI:10.1007/978-3-031-57228-9_5
 // where diamonds ~ player 0 and squares ~ player 1.
 
-node s0: label["s"], owner[0]
-node s1: label["u"], owner[1]
+node s0: label["s"], owner[1]
+node s1: label["u"], owner[0]
 node s2: label["v"], owner[1]
-node s3: label["w"], owner[1]
+node s3: label["w"], owner[0]
 node s4: label["r"], owner[0]
 node s5: label["t"], owner[0]
 edge s0 -> s0

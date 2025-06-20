@@ -59,6 +59,8 @@ Comma<T>: Vec<T> = {
 // Lists of node and edge attributes
 NodeAttrList = Comma<NodeAttr>;
 
+// List of Node IDs
+pub NIDList = Comma<Id>;
 
 
 pub Line: ParsedLine = {

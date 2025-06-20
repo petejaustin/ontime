@@ -106,6 +106,25 @@ impl TemporalGraph {
         0..self.node_count
     }
 
+    pub fn successors_at(&self, from: Node, time: usize) -> impl Iterator<Item = Node> {
+        self.edges_from_at(from, time).map(|e| *e.target())
+    }
+    
+    pub fn node_ownership(&self) -> Vec<bool> {
+        let mut player_one_nodes = vec![false; self.node_count];
+        for node in self.nodes() {
+            player_one_nodes[node] = self.node_attrs.get(&node)
+                .and_then(|attrs| attrs.get("owner"))
+                .and_then(|attr| match attr {
+                    NodeAttr::Owner(val) => Some(*val),
+                    _ => None,
+                })
+                .unwrap_or(false)
+
+        }
+        player_one_nodes
+    }
+
     /// Given a set of node id strings, returns a vector of bools of length node_count.
     /// For each string, if node_id_map gives a Node with index n, then the returned vector is true at position n.
     pub fn nodes_selected_from_ids(&self, ids: &std::collections::HashSet<String>) -> Vec<bool> {
