@@ -14,8 +14,8 @@ pub enum Expr {
 pub enum Formula {
     Forall(String, Box<Formula>),
     Exists(String, Box<Formula>),
-    And(Box<Formula>, Box<Formula>),
-    Or(Box<Formula>, Box<Formula>),
+    And(Vec<Formula>),
+    Or(Vec<Formula>),
     Not(Box<Formula>),
     Eq(Box<Expr>, Box<Expr>),
     Neq(Box<Expr>, Box<Expr>),
@@ -53,9 +53,10 @@ impl Formula {
                 body.collect_free_variables(bound, free);
                 bound.remove(var.as_str());
             }
-            Formula::And(f1, f2) | Formula::Or(f1, f2) => {
-                f1.collect_free_variables(bound, free);
-                f2.collect_free_variables(bound, free);
+            Formula::And(fs) | Formula::Or(fs) => {
+                for f in fs {
+                    f.collect_free_variables(bound, free);
+                }
             }
             Formula::Not(f) => f.collect_free_variables(bound, free),
             Formula::Eq(e1, e2)
@@ -125,16 +126,16 @@ mod tests {
     fn test_free_variables_nested() {
         let f = Formula::Exists(
             "z".to_string(),
-            Box::new(Formula::And(
-                Box::new(Formula::Eq(
+            Box::new(Formula::And(vec![
+                Formula::Eq(
                     Box::new(Expr::Var("x".to_string())),
                     Box::new(Expr::Var("z".to_string())),
-                )),
-                Box::new(Formula::Eq(
+                ),
+                Formula::Eq(
                     Box::new(Expr::Var("y".to_string())),
                     Box::new(Expr::Const(0)),
-                )),
-            )),
+                ),
+            ])),
         );
         let free = f.free_variables();
         assert_eq!(free, ["x", "y"].iter().cloned().collect());

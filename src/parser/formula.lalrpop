@@ -3,11 +3,19 @@ use crate::formulae::Formula;
 
 grammar;
 
+// declare precedences for the lexer
+match {
+    r"\s*" => { }, // The default whitespace skipping is disabled if an `ignore pattern` is specified
+    r"//[^\n\r]*[\n\r]*" => { }, // Skip `// comments`
+    r"/\*[^*]*\*+(?:[^/*][^*]*\*+)*/" => { },  // Skip `/* comments */`
+    _
+}
+
 pub Formula: Formula = {
     "(" "forall" <v:VAR> <f:Formula> ")" => Formula::Forall(v, Box::new(f)),
     "(" "exists" <v:VAR> <f:Formula> ")" => Formula::Exists(v, Box::new(f)),
-    "(" "and" <f1:Formula> <f2:Formula> ")" => Formula::And(Box::new(f1), Box::new(f2)),
-    "(" "or" <f1:Formula> <f2:Formula> ")" => Formula::Or(Box::new(f1), Box::new(f2)),
+    "(" "and" <fs:(Formula)+> ")" => Formula::And(fs),
+    "(" "or" <fs:(Formula)+> ")" => Formula::Or(fs),
     "(" "not" <f:Formula> ")" => Formula::Not(Box::new(f)),
     "(" "=" <e1:Expr> <e2:Expr> ")" => Formula::Eq(Box::new(e1), Box::new(e2)),
     "(" "!=" <e1:Expr> <e2:Expr> ")" => Formula::Neq(Box::new(e1), Box::new(e2)),
