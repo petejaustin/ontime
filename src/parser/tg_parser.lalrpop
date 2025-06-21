@@ -67,7 +67,7 @@ pub Line: ParsedLine = {
     "node" <id:Id> ":" <attrs:NodeAttrList> => ParsedLine::Node(id, attrs),
     "node" <id:Id> => ParsedLine::Node(id, vec![]),
     "edge" <from:Id> "->" <to:Id> => ParsedLine::Edge(from, to, None),
-    "edge" <from:Id> "->" <to:Id> ":" <s:r#"\(.*\)"#> => ParsedLine::Edge(from, to, Some(formula::FormulaParser::new().parse(&s).unwrap())),
+    "edge" <from:Id> "->" <to:Id> ":" <s:r#"\(.*\)"#> => ParsedLine::Edge(from, to, Some(formula::FormulaParser::new().parse(s).unwrap())),
 };
 
 
