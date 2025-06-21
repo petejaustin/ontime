@@ -4,7 +4,7 @@
 
 ## Quick start
 
-Assuming you have [rust and cargo installed](https://www.rust-lang.org/tools/install), compile and run shepherd as follows.
+Assuming you have [rust and cargo installed](https://www.rust-lang.org/tools/install), compile and run as follows.
 
 ```
 cargo run -- examples/game1.1.tg "s,t" 10000
@@ -33,7 +33,7 @@ To run tests:
 cargo test
 ```
 
-To generate html docs to `target/doc/shepherd/index.html`
+To generate html docs to `target/doc/ontime/index.html`
 ```
 cargo doc
 ```
