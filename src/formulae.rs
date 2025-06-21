@@ -30,67 +30,8 @@ pub enum Formula {
 impl Formula {
     /// Attempts to turn the formula into a closure `Fn(usize) -> bool`.
     /// Only works if the formula is quantifier-free and has at most one free variable.
-    pub fn as_closure<'a>(&'a self) -> Result<Box<dyn Fn(usize) -> bool + 'a>, &'static str> {
-        if !self.is_quantifier_free() {
-            return Err("Formula contains quantifiers");
-        }
-        let free_vars = self.free_variables();
-        if free_vars.len() > 1 {
-            return Err("Formula must have at most one free variable");
-        }
-        let var_opt = free_vars.iter().next().copied();
-
-        fn eval_expr(expr: &Expr, var: Option<&str>, val: usize) -> i64 {
-            match expr {
-                Expr::Add(e1, e2) => eval_expr(e1, var, val) + eval_expr(e2, var, val),
-                Expr::Sub(e1, e2) => eval_expr(e1, var, val) - eval_expr(e2, var, val),
-                Expr::MulConst(c, e) => *c * eval_expr(e, var, val),
-                Expr::Mod(e, m) => eval_expr(e, var, val) % *m,
-                Expr::Var(v) => {
-                    if let Some(var_name) = var {
-                        if v == var_name {
-                            val as i64
-                        } else {
-                            panic!("Unexpected variable: {}", v)
-                        }
-                    } else {
-                        panic!("No free variable expected, but found variable: {}", v)
-                    }
-                }
-                Expr::Const(c) => *c,
-            }
-        }
-
-        fn eval_formula(formula: &Formula, var: Option<&str>, val: usize) -> bool {
-            match formula {
-                Formula::And(fs) => fs.iter().all(|f| eval_formula(f, var, val)),
-                Formula::Or(fs) => fs.iter().any(|f| eval_formula(f, var, val)),
-                Formula::Not(f) => !eval_formula(f, var, val),
-                Formula::Eq(e1, e2) => eval_expr(e1, var, val) == eval_expr(e2, var, val),
-                Formula::Neq(e1, e2) => eval_expr(e1, var, val) != eval_expr(e2, var, val),
-                Formula::Lt(e1, e2) => eval_expr(e1, var, val) < eval_expr(e2, var, val),
-                Formula::Le(e1, e2) => eval_expr(e1, var, val) <= eval_expr(e2, var, val),
-                Formula::Gt(e1, e2) => eval_expr(e1, var, val) > eval_expr(e2, var, val),
-                Formula::Ge(e1, e2) => eval_expr(e1, var, val) >= eval_expr(e2, var, val),
-                Formula::True => true,
-                Formula::False => false,
-                _ => unreachable!("Quantifiers should not be present"),
-            }
-        }
-
-        if var_opt.is_none() {
-            // No free variable: precompute result
-            let result = eval_formula(self, None, 0);
-            Ok(Box::new(move |_| result))
-        } else {
-            Ok(Box::new(move |x: usize| eval_formula(self, var_opt, x)))
-        }
-    }
-
-    /// Attempts to turn the formula into a closure `Fn(usize) -> bool`.
-    /// Only works if the formula is quantifier-free and has at most one free variable.
     /// The closure does not borrow from the formula and is `'static`.
-    pub fn as_closure_owned(self) -> Result<Box<dyn Fn(usize) -> bool + 'static>, &'static str> {
+    pub fn as_closure(self) -> Result<Box<dyn Fn(usize) -> bool + 'static>, &'static str> {
         if !self.is_quantifier_free() {
             return Err("Formula contains quantifiers");
         }

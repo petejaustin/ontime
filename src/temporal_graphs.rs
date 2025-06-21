@@ -15,7 +15,7 @@ pub struct Edge {
 
 impl Edge {
     pub fn new(source: Node, target: Node, formula: Formula) -> Self {
-        let available_at = match formula.clone().as_closure_owned() {
+        let available_at = match formula.clone().as_closure() {
             Ok(f) => f,
             Err(_) => Box::new(|_| false),
         };
