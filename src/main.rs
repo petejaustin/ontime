@@ -1,11 +1,8 @@
-use std::collections::HashSet;
-
 use std::fs::File;
 use std::io::{self, Read};
 use std::path::Path;
 
 use ontime::parser::tg_parser::{NIDListParser, TemporalGraphParser};
-use ontime::temporal_graphs;
 
 fn main() -> io::Result<()> {
     // Path to the example file
@@ -26,7 +23,7 @@ fn main() -> io::Result<()> {
     // Parse the file
     let parser = TemporalGraphParser::new();
     let graph = parser.parse(&input).expect("Parse error");
-    println!("{:#?}", graph);
+    //println!("{:#?}", graph);
 
     // println!("Target: {:?}", target_nodes);
     // println!("{:?}", graph.nodes_selected_from_ids(&target_nodes));
@@ -38,29 +35,39 @@ fn main() -> io::Result<()> {
     // target_nodes.insert("s0".to_string());
     let v = parser.parse(&args[2]).expect("Failed to read target");
     let target_ids: std::collections::HashSet<_> = v.iter().cloned().collect();
-    println!("{:#?}", target_ids);
+    //println!("{:#?}", target_ids);
 
-    println!("Target: {:?}", target_ids);
 
     // time to reach
     let k: usize = args[3].parse::<usize>().expect("Failed to parse usize");
 
-    // W is the winning set at time k
-    let mut W: Vec<bool> = graph.nodes_selected_from_ids(&target_ids);
-    let owns: Vec<bool> = graph.node_ownership();
-    println!("{:?}", owns);
-    for i in (0..k).rev() {
-        println!("{} {:?}", i, W);
 
-        let mut W_new: Vec<bool> = vec![false; graph.node_count];
+    // true --> pLayer one, false --> player two node.
+    let owns: Vec<bool> = graph.node_ownership();
+
+    // w is the winning set at time k
+    let mut wins_at: Vec<bool> = graph.nodes_selected_from_ids(&target_ids);
+    println!("W_{} = {:?}", k, graph.ids_from_nodes_vec(&wins_at));
+
+    // compute wins_at one at a time from k-1 down to 0
+    for i in (0..k).rev() {
+
+        // new empty vector
+        let mut w: Vec<bool> = vec![false; graph.node_count];
+        
+        // 1-step attractor attime i
          for node in graph.nodes(){
              match owns[node] {
-                true => W_new[node] = graph.successors_at(node, i).any(|s| W[s]),
-                false => W_new[node] = graph.successors_at(node, i).all(|s| W[s]),
+                true => w[node] = graph.successors_at(node, i).any(|s| wins_at[s]),
+                false => w[node] = graph.successors_at(node, i).all(|s| wins_at[s]),
             }
-            W = W_new.clone();
         }
+        wins_at = w.clone();
+        //println!("W_{} = {:?}", i, graph.ids_from_nodes_vec(&wins_at));
     }
+
+    // output
+    println!("W_0 = {:?}", graph.ids_from_nodes_vec(&wins_at));
 
     Ok(())
 }
