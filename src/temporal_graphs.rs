@@ -138,4 +138,14 @@ impl TemporalGraph {
         }
         selected
     }
+
+    // id strings for vector of nodes
+    pub fn ids_from_nodes_vec(&self, v: Vec<bool>) -> HashSet<String>{
+        let mut ids = HashSet<>::new();
+        for (id, &idx) in &self.node_id_map {
+            if idx < v.len() && v[idx] {
+                ids.insert(id.clone());
+            }
+        }
+        ids
 }
