@@ -1,6 +1,6 @@
 # ontime
 
-`ontime` implements a solver for punctual reachability games on temporal graphs using simple backwards induction.
+`ontime` implements a solver for punctual reachability games on temporal graphs using [simple backwards induction][ALG].
 
 ## Quick start
 
@@ -11,7 +11,7 @@ cargo run -- examples/game1.1.tg "s,t" 10000
 ```
 
 That will load a temporal graph from the file `examples/game1.1.tg`
-and compute which states at time 0 can force to visit the target $\{s,t\}$ at time 10000.
+and compute which states at time 0 can force to visit the target $\\{s,t\\}$ at time 10000.
 
 
 ## Installation
@@ -37,3 +37,5 @@ To generate html docs to `target/doc/shepherd/index.html`
 ```
 cargo doc
 ```
+
+[ALG]: https://github.com/pazz/ontime/blob/main/src/main.rs#L40
