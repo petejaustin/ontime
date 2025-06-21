@@ -4,10 +4,10 @@
 node s: owner[1]
 node u: owner[0]
 node t: owner[1]
-node t': owner[1]
+node tt: owner[1]
 
 edge s -> u: (= (mod x 2)  0)
 edge u -> t: (= (mod x 2)  1)
-edge u -> t': (= (mod x 2)  1)
+edge u -> tt: (= (mod x 2)  1)
 edge t -> t
 edge t -> s
