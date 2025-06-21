@@ -23,6 +23,14 @@ pub Formula: Formula = {
     "(" "<=" <e1:Expr> <e2:Expr> ")" => Formula::Le(Box::new(e1), Box::new(e2)),
     "(" ">" <e1:Expr> <e2:Expr> ")" => Formula::Gt(Box::new(e1), Box::new(e2)),
     "(" ">=" <e1:Expr> <e2:Expr> ")" => Formula::Ge(Box::new(e1), Box::new(e2)),
+
+    // list of commas
+    "(" <list:Comma<INT>> ")" 
+    => Formula::Or(
+        list.iter()
+        .map(|t| Formula::Eq(Box::new(Expr::Var("t".to_string())), Box::new(Expr::Const(*t))))
+        .collect()
+        )
 };
 
 Expr: Expr = {
@@ -36,3 +44,15 @@ Expr: Expr = {
 
 VAR: String = <s:r"[A-Za-z]+"> => s.to_string();
 INT: i64 = <s:r"[0-9]+"> => s.parse::<i64>().unwrap();
+
+// Helper: a comma-separated list of Ts
+Comma<T>: Vec<T> = {
+    <mut v:(<T> ",")*> <e:T?> => match e {
+        None => v,
+        Some(e) => {
+            v.push(e);
+            v
+        }
+    }
+};
+

@@ -1,0 +1,13 @@
+// a graph where edge availability is given as list of timestamps
+// This is the graph in fig 1a of https://arxiv.org/abs/2412.16328
+
+node s: owner[1]
+node v: owner[1]
+node u: owner[1]
+node t: owner[1]
+
+edge s -> v: (0,3)
+edge v -> v
+edge s -> t: (0)
+edge t -> u: (1)
+edge u -> s
