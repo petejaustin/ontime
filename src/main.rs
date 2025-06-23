@@ -23,6 +23,7 @@ fn main() -> io::Result<()> {
     // Parse the file
     let parser = TemporalGraphParser::new();
     let graph = parser.parse(&input).expect("Parse error");
+    //println!("{:#?}", &graph);
 
     // parse target
     let parser = NIDListParser::new();

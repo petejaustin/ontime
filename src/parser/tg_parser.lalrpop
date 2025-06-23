@@ -1,8 +1,10 @@
 grammar;
 
-use crate::temporal_graphs::{TemporalGraph};
+use crate::temporal_graphs::TemporalGraph;
 use crate::parser::{ParsedLine, NodeAttr, temporal_graph_from_lines};
-use crate::parser::formula;
+
+use crate::formulae::Formula;
+use crate::parser::formula::FormulaParser;
 
 
 // declare precedences for the lexer
@@ -16,31 +18,33 @@ match {
     r"/\*[^*]*\*+(?:[^/*][^*]*\*+)*/" => { },  // Skip `/* comments */`
 
     // anything else
+    r#"[A-Za-z]+[A-Za-z0-9_]*"# => id_token,
+    r"-?[0-9]+" => int_token,
+    r#""([^"\\]|\\.)*""# => string_token,
+    r#"\(.*\)"# => formula_token,
     _
 }
 
 
-
-
 // Node ID: nonempty string starting with a letter
-Id: String = {
-    <s:r#"[A-Za-z_]+[A-Za-z0-9_]*"#> => s.to_string()
+ID: String = {
+    id_token => <>.to_string()
 };
 
 QuotedString: String = {
-    r#""([^"\\]|\\.)*""# => String::from(&<>[1..<>.len()-1]),
+    string_token => String::from(&<>[1..<>.len()-1]),
 };
 
-//BracketedString: String = {
-//    r#""([^\(\\]|\\.)*\)# => String::from(&<>[1..<>.len()-1]),
-//};
+INT: i64 = <s:int_token> => s.parse::<i64>().unwrap();
 
+FORMULA: Formula = {
+    <f:formula_token> => FormulaParser::new().parse(f).unwrap(),
+}
 
 // Node attributes, e.g. "owner(0)"
 NodeAttr: NodeAttr = {
     "label" "[" <l:QuotedString> "]" => NodeAttr::Label(l),
-    "owner" "[1]" => NodeAttr::Owner(true),
-    "owner" "[0]" => NodeAttr::Owner(false),
+    "owner" "[" <i:INT> "]" => NodeAttr::Owner(i%2==0),
 };
 
 
@@ -60,14 +64,14 @@ Comma<T>: Vec<T> = {
 NodeAttrList = Comma<NodeAttr>;
 
 // List of Node IDs
-pub NIDList = Comma<Id>;
+pub NIDList = Comma<ID>;
 
 
 pub Line: ParsedLine = {
-    "node" <id:Id> ":" <attrs:NodeAttrList> => ParsedLine::Node(id, attrs),
-    "node" <id:Id> => ParsedLine::Node(id, vec![]),
-    "edge" <from:Id> "->" <to:Id> => ParsedLine::Edge(from, to, None),
-    "edge" <from:Id> "->" <to:Id> ":" <s:r#"\(.*\)"#> => ParsedLine::Edge(from, to, Some(formula::FormulaParser::new().parse(s).unwrap())),
+    "node" <id:ID> ":" <attrs:NodeAttrList> => ParsedLine::Node(id, attrs),
+    "node" <id:ID> => ParsedLine::Node(id, vec![]),
+    "edge" <from:ID> "->" <to:ID> => ParsedLine::Edge(from, to, None),
+    "edge" <from:ID> "->" <to:ID> ":" <f:FORMULA> => ParsedLine::Edge(from, to, Some(f)),
 };
 
 
