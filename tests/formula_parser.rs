@@ -19,26 +19,24 @@ fn test_parse_simple_comparison() {
 
 #[test]
 fn test_parse_and_or() {
-let f = parse_formula("(and (= x 1) (or (= y 2) (not (= z 3))))");
-let expected = Formula::And(vec![
-    Formula::Eq(
-        Box::new(Expr::Var("x".to_string())),
-        Box::new(Expr::Const(1))
-    ),
-    Formula::Or(vec![
+    let f = parse_formula("(and (= x 1) (or (= y 2) (not (= z 3))))");
+    let expected = Formula::And(vec![
         Formula::Eq(
-            Box::new(Expr::Var("y".to_string())),
-            Box::new(Expr::Const(2))
+            Box::new(Expr::Var("x".to_string())),
+            Box::new(Expr::Const(1)),
         ),
-        Formula::Not(Box::new(
+        Formula::Or(vec![
             Formula::Eq(
+                Box::new(Expr::Var("y".to_string())),
+                Box::new(Expr::Const(2)),
+            ),
+            Formula::Not(Box::new(Formula::Eq(
                 Box::new(Expr::Var("z".to_string())),
-                Box::new(Expr::Const(3))
-            )
-        ))
-    ])
-]);
-assert_eq!(f, expected);
+                Box::new(Expr::Const(3)),
+            ))),
+        ]),
+    ]);
+    assert_eq!(f, expected);
 }
 
 #[test]
@@ -56,4 +54,3 @@ fn test_parse_forall_exists() {
         panic!("Expected Forall");
     }
 }
-

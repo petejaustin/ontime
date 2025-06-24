@@ -109,18 +109,19 @@ impl TemporalGraph {
     pub fn successors_at(&self, from: Node, time: usize) -> impl Iterator<Item = Node> {
         self.edges_from_at(from, time).map(|e| *e.target())
     }
-    
+
     pub fn node_ownership(&self) -> Vec<bool> {
         let mut player_one_nodes = vec![false; self.node_count];
         for node in self.nodes() {
-            player_one_nodes[node] = self.node_attrs.get(&node)
+            player_one_nodes[node] = self
+                .node_attrs
+                .get(&node)
                 .and_then(|attrs| attrs.get("owner"))
                 .and_then(|attr| match attr {
                     NodeAttr::Owner(val) => Some(*val),
                     _ => None,
                 })
                 .unwrap_or(false)
-
         }
         player_one_nodes
     }
@@ -140,7 +141,7 @@ impl TemporalGraph {
     }
 
     // id strings for vector of nodes
-    pub fn ids_from_nodes_vec(&self, v: &[bool]) -> HashSet<String>{
+    pub fn ids_from_nodes_vec(&self, v: &[bool]) -> HashSet<String> {
         let mut ids = HashSet::<String>::new();
         for (id, &idx) in &self.node_id_map {
             if idx < v.len() && v[idx] {
@@ -150,4 +151,3 @@ impl TemporalGraph {
         ids
     }
 }
-

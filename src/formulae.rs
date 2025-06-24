@@ -41,7 +41,10 @@ impl Formula {
         }
         let var_opt = free_vars.into_iter().next().map(|s| s.to_string());
 
-        fn expr_to_closure(expr: crate::formulae::Expr, var: Option<String>) -> Box<dyn Fn(usize) -> i64 + 'static> {
+        fn expr_to_closure(
+            expr: crate::formulae::Expr,
+            var: Option<String>,
+        ) -> Box<dyn Fn(usize) -> i64 + 'static> {
             match expr {
                 crate::formulae::Expr::Add(e1, e2) => {
                     let c1 = expr_to_closure(*e1, var.clone());
@@ -84,11 +87,17 @@ impl Formula {
         ) -> Box<dyn Fn(usize) -> bool + 'static> {
             match formula {
                 Formula::And(fs) => {
-                    let cs: Vec<_> = fs.into_iter().map(|f| formula_to_closure(f, var.clone())).collect();
+                    let cs: Vec<_> = fs
+                        .into_iter()
+                        .map(|f| formula_to_closure(f, var.clone()))
+                        .collect();
                     Box::new(move |x| cs.iter().all(|c| c(x)))
                 }
                 Formula::Or(fs) => {
-                    let cs: Vec<_> = fs.into_iter().map(|f| formula_to_closure(f, var.clone())).collect();
+                    let cs: Vec<_> = fs
+                        .into_iter()
+                        .map(|f| formula_to_closure(f, var.clone()))
+                        .collect();
                     Box::new(move |x| cs.iter().any(|c| c(x)))
                 }
                 Formula::Not(f) => {
@@ -134,9 +143,6 @@ impl Formula {
         let closure = formula_to_closure(self, var_opt);
         Ok(closure)
     }
-
-
-
 
     /// Returns true if the formula contains no quantifiers (Forall or Exists).
     pub fn is_quantifier_free(&self) -> bool {
@@ -315,7 +321,6 @@ mod tests {
         assert!(!f.has_exactly_one_free_variable("x"));
         assert!(!f.has_exactly_one_free_variable("y"));
     }
-
 
     #[test]
     fn test_as_closure() {
