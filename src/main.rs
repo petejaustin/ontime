@@ -35,25 +35,27 @@ fn main() -> io::Result<()> {
     let k: usize = args[3].parse::<usize>().expect("Failed to parse usize");
 
     // node ownershopt. true --> pLayer one, false --> player two node.
-    let owns: Vec<bool> = graph.node_ownership();
+    let nodes_owned_by_reacher: Vec<bool> = graph.node_ownership();
 
     // w is the winning set at time k
     let mut wins_at: Vec<bool> = graph.nodes_selected_from_ids(&target_ids);
     println!("W_{} = {:?}", k, graph.ids_from_nodes_vec(&wins_at));
 
+
+    // auxiliary variable for winning set at time i-1
+    let mut wins_before: Vec<bool> = vec![false; graph.node_count];
+
     // compute wins_at one at a time from k-1 down to 0
     for i in (0..k).rev() {
-        // new empty vector
-        let mut w: Vec<bool> = vec![false; graph.node_count];
 
-        // 1-step attractor attime i
+        // wins_before = 1-step attractor of wins_at
         for node in graph.nodes() {
-            match owns[node] {
-                true => w[node] = graph.successors_at(node, i).any(|s| wins_at[s]),
-                false => w[node] = graph.successors_at(node, i).all(|s| wins_at[s]),
+            match nodes_owned_by_reacher[node] {
+                true => wins_before[node] = graph.successors_at(node, i).any(|s| wins_at[s]),
+                false => wins_before[node] = graph.successors_at(node, i).all(|s| wins_at[s]),
             }
         }
-        wins_at = w.clone();
+        wins_at = wins_before.clone();
         //println!("W_{} = {:?}", i, graph.ids_from_nodes_vec(&wins_at));
     }
 
