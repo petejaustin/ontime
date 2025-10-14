@@ -47,7 +47,7 @@ fn main() -> io::Result<()> {
     println!("W_{} = {:?}", k, graph.ids_from_nodes_vec(&target_at_k));
 
     // compute the reachable set at time 0
-    let wins_at = reachable_at(&graph, k, true, target_at_k);
+    let wins_at = reachable_at(&graph, k, true, &target_at_k);
 
     // output
     println!("W_0 = {:?}", graph.ids_from_nodes_vec(&wins_at));
