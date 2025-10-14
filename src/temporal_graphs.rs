@@ -36,7 +36,7 @@ impl Edge {
     fn target(&self) -> &Node {
         &self.target
     }
-    fn is_available(&self, time: usize) -> bool {
+    pub fn is_available(&self, time: usize) -> bool {
         (self.available_at)(time)
     }
 }
@@ -179,7 +179,6 @@ mod tests {
 
         use crate::formulae::{Expr, Formula};
         let edges = vec![
-            // self-loops
             //Edge::new(0, 0, Formula::True),
             Edge::new(1, 1, Formula::True),
             // edge from 0 to 1 with constraint x >= 5
@@ -198,29 +197,22 @@ mod tests {
     #[test]
     fn test_two_state_successors_at_4() {
         let graph = create_two_state_graph();
-        // println!("{:#?}", &graph.edges_from(1).collect::<Vec<_>>());
-        // let e = &graph.edges_from(1).next().unwrap();
-        // println!("{:#?}", &e);
-        // let f = e.formula.clone();
-        // println!("{:#?}", &f);
-        // let closure = f.as_closure().expect("Should succeed");
-        // println!("x >= 5 == {:#?}", closure(4));
-        //  At time 4,
-        //  state 0 cannot reach state 1 (x >= 5) fails
-        //  state 1 can reach state 1 (true)
-
-        let successors: Vec<_> = graph.successors_at(1, 4).collect();
-        //println!("SUCCS = {:?}", &successors);
-        assert_eq!(successors, vec![1]);
+        //  At time 4, state 0 cannot reach any state
         let successors: Vec<_> = graph.successors_at(0, 4).collect();
         assert_eq!(successors, vec![]);
+
+        //  At time 4, state 1 can reach states {1}
+        let successors: Vec<_> = graph.successors_at(1, 4).collect();
+        assert_eq!(successors, vec![1]);
     }
     #[test]
     fn test_two_state_successors_at_5() {
         let graph = create_two_state_graph();
+        //  At time 5, state 0 can reach state 1 only
         let successors: Vec<_> = graph.successors_at(0, 5).collect();
         assert_eq!(successors, vec![1]);
 
+        //  At time 5, state 1 can reach state 1 only
         let successors: Vec<_> = graph.successors_at(1, 5).collect();
         assert_eq!(successors, vec![1]);
     }
