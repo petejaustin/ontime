@@ -362,4 +362,15 @@ mod tests {
         );
         assert!(f4.as_closure().is_err());
     }
+
+ #[test]
+    fn test_as_closure_ge_5() {
+        let f = Formula::Ge(
+            Box::new(Expr::Var("x".to_string())),
+            Box::new(Expr::Const(5)),
+        );
+        let fun = f.as_closure().expect("Should succeed");
+        assert_eq!(fun(5),true);
+        assert_eq!(fun(4),false);
+    }
 }
