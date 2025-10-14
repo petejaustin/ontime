@@ -3,6 +3,7 @@ use std::io::{self, Read};
 use std::path::Path;
 
 use clap::Parser;
+use ontime::game::reachable_at;
 use ontime::parser::tg_parser::{NIDListParser, TemporalGraphParser};
 
 /// A solver for punctual reachability games on temporal graphs
@@ -30,43 +31,23 @@ fn main() -> io::Result<()> {
     // Parse the file
     let parser = TemporalGraphParser::new();
     let graph = parser.parse(&input).expect("Parse error");
-    //println!("{:#?}", &graph);
+    println!("{:#?}", &graph);
 
     // parse target
     let parser = NIDListParser::new();
     let v = parser.parse(&args.target_set).expect("Failed to read target");
     let target_ids: std::collections::HashSet<_> = v.iter().cloned().collect();
-    //println!("{:#?}", target_ids);
+    println!("\n\ntarget {:#?}", target_ids);
 
     // time to reach
     let k: usize = args.time_to_reach;
 
-    // node ownershopt. true --> pLayer one, false --> player two node.
-    let nodes_owned_by_reacher: Vec<bool> = graph.node_ownership();
-
     // w is the winning set at time k
-    let mut wins_at: Vec<bool> = graph.nodes_selected_from_ids(&target_ids);
-    println!("W_{} = {:?}", k, graph.ids_from_nodes_vec(&wins_at));
+    let target_at_k: Vec<bool> = graph.nodes_selected_from_ids(&target_ids);
+    println!("W_{} = {:?}", k, graph.ids_from_nodes_vec(&target_at_k));
 
-
-    // auxiliary variable for winning set at time i-1
-    let mut wins_before: Vec<bool> = vec![false; graph.node_count];
-
-    // compute wins_at one at a time from k-1 down to 0
-    for i in (0..k).rev() {
-
-        // wins_before = 1-step attractor of wins_at
-        for node in graph.nodes() {
-            match nodes_owned_by_reacher[node] {
-                true => wins_before[node] = graph.successors_at(node, i).any(|s| wins_at[s]),
-                false => wins_before[node] = 
-                        graph.successors_at(node, i).next().is_some() 
-                        && graph.successors_at(node, i).all(|s| wins_at[s])
-            }
-        }
-        wins_at = wins_before.clone();
-        //println!("W_{} = {:?}", i, graph.ids_from_nodes_vec(&wins_at));
-    }
+    // compute the reachable set at time 0
+    let wins_at = reachable_at(&graph, k, true, target_at_k);
 
     // output
     println!("W_0 = {:?}", graph.ids_from_nodes_vec(&wins_at));
