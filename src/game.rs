@@ -6,7 +6,7 @@ use crate::temporal_graphs::TemporalGraph;
 /// # Arguments
 /// * `graph` - Reference to the temporal graph
 /// * `k` - The time horizon (time at which to reach the target)
-/// * `_layer` - Boolean player who wants to reach (0 or 1)
+/// * `player` - Boolean player who wants to reach (0 or 1)
 /// * `target` - target set)
 ///
 /// # Returns
@@ -22,7 +22,7 @@ pub fn reachable_at(
 
     // w is the winning set at time k
     let mut wins_at: Vec<bool> = target.to_vec();
-    println!("target: {:?}", wins_at);
+    //dbg!("target: {:?}", wins_at);
 
     // auxiliary variable for winning set at time i-1
     let mut wins_before: Vec<bool> = vec![false; graph.node_count];
@@ -31,22 +31,22 @@ pub fn reachable_at(
     for i in (0..k).rev() {
         // wins_before = 1-step attractor of wins_at
         for node in graph.nodes() {
-            let successors: Vec<_> = graph.successors_at(node, i).collect();
-            println!(
-                "SUCCS from {} (owner {}) at {} = {:?}",
-                node, owner[node], i, &successors
-            );
+            //let successors: Vec<_> = graph.successors_at(node, i).collect();
+            // dbg!(
+            //     "SUCCS from {} (owner {}) at {} = {:?}",
+            //     node, owner[node], i, &successors
+            // );
             match owner[node] == player {
                 true => wins_before[node] = graph.successors_at(node, i).any(|s| wins_at[s]),
                 false => {
                     wins_before[node] = graph.successors_at(node, i).next().is_some()
                         && graph.successors_at(node, i).all(|s| wins_at[s])
                 }
-            }
+           }
         }
         wins_at = wins_before.clone();
-        println!("{:?}", wins_at);
-        //println!("W_{} = {:?}", i, graph.ids_from_nodes_vec(&wins_at));
+        //dbg!("{:?}", wins_at);
+        //dbg!("W_{} = {:?}", i, graph.ids_from_nodes_vec(&wins_at));
     }
 
     wins_at

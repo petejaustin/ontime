@@ -31,13 +31,13 @@ fn main() -> io::Result<()> {
     // Parse the file
     let parser = TemporalGraphParser::new();
     let graph = parser.parse(&input).expect("Parse error");
-    println!("{:#?}", &graph);
+    //dbg!("{:#?}", &graph);
 
     // parse target
     let parser = NIDListParser::new();
     let v = parser.parse(&args.target_set).expect("Failed to read target");
     let target_ids: std::collections::HashSet<_> = v.iter().cloned().collect();
-    println!("\n\ntarget {:#?}", target_ids);
+    //dbg!("target {:#?}", target_ids);
 
     // time to reach
     let k: usize = args.time_to_reach;
