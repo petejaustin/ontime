@@ -151,3 +151,77 @@ impl TemporalGraph {
         ids
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::parser::NodeAttr;
+    use crate::temporal_graphs::Edge;
+    use std::collections::HashMap;
+
+    // Helper: two-state graph, both with self-loops (constraint true),
+    // and state 0 has an edge to state 1 with constraint x >= 5.
+    fn create_two_state_graph() -> TemporalGraph {
+        let node_count = 2;
+        let mut node_id_map = HashMap::new();
+        node_id_map.insert("s0".to_string(), 0);
+        node_id_map.insert("s1".to_string(), 1);
+
+        let mut node_attrs = HashMap::new();
+        let mut s0_attrs = HashMap::new();
+        s0_attrs.insert("owner".to_string(), NodeAttr::Owner(false));
+        s0_attrs.insert("label".to_string(), NodeAttr::Label("s0".to_string()));
+        node_attrs.insert(0, s0_attrs);
+        let mut s1_attrs = HashMap::new();
+        s1_attrs.insert("owner".to_string(), NodeAttr::Owner(false));
+        s1_attrs.insert("label".to_string(), NodeAttr::Label("s1".to_string()));
+        node_attrs.insert(1, s1_attrs);
+
+        use crate::formulae::{Expr, Formula};
+        let edges = vec![
+            // self-loops
+            //Edge::new(0, 0, Formula::True),
+            Edge::new(1, 1, Formula::True),
+            // edge from 0 to 1 with constraint x >= 5
+            Edge::new(
+                0,
+                1,
+                Formula::Ge(
+                    Box::new(Expr::Var("x".to_string())),
+                    Box::new(Expr::Const(5)),
+                ),
+            ),
+        ];
+        TemporalGraph::new(node_count, node_id_map, node_attrs, edges)
+    }
+
+    #[test]
+    fn test_two_state_successors_at_4() {
+        let graph = create_two_state_graph();
+        // println!("{:#?}", &graph.edges_from(1).collect::<Vec<_>>());
+        // let e = &graph.edges_from(1).next().unwrap();
+        // println!("{:#?}", &e);
+        // let f = e.formula.clone();
+        // println!("{:#?}", &f);
+        // let closure = f.as_closure().expect("Should succeed");
+        // println!("x >= 5 == {:#?}", closure(4));
+        //  At time 4,
+        //  state 0 cannot reach state 1 (x >= 5) fails
+        //  state 1 can reach state 1 (true)
+
+        let successors: Vec<_> = graph.successors_at(1, 4).collect();
+        //println!("SUCCS = {:?}", &successors);
+        assert_eq!(successors, vec![1]);
+        let successors: Vec<_> = graph.successors_at(0, 4).collect();
+        assert_eq!(successors, vec![]);
+    }
+    #[test]
+    fn test_two_state_successors_at_5() {
+        let graph = create_two_state_graph();
+        let successors: Vec<_> = graph.successors_at(0, 5).collect();
+        assert_eq!(successors, vec![1]);
+
+        let successors: Vec<_> = graph.successors_at(1, 5).collect();
+        assert_eq!(successors, vec![1]);
+    }
+}
